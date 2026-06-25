@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -19,6 +20,33 @@ export async function generateStaticParams() {
 
 interface PaginaFilmeProps {
   params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PaginaFilmeProps): Promise<Metadata> {
+  const { slug } = await params;
+  const filme = await getFilme(slug);
+
+  if (!filme) {
+    return {
+      title: "Filme não encontrado",
+      description: "O filme solicitado não está no catálogo da Cinelista.",
+    };
+  }
+
+  const descricao = `${filme.sinopse.slice(0, 155)}…`;
+
+  return {
+    title: filme.titulo,
+    description: descricao,
+    openGraph: {
+      type: "video.movie",
+      title: filme.titulo,
+      description: descricao,
+      releaseDate: filme.dataEstreia,
+    },
+  };
 }
 
 export default async function PaginaFilme({ params }: PaginaFilmeProps) {
